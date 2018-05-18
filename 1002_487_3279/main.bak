@@ -1,0 +1,69 @@
+#include <iostream>
+// #include <unordered_map>
+#include <map>
+#include <string>
+
+using namespace std;
+
+int main() {
+
+    // unordered_map<char, char> m;
+    map<char, char> m;
+    // push the code MAP
+    m['A'] = '2'; m['B'] = '2'; m['C'] = '2';
+    m['D'] = '3'; m['E'] = '3'; m['F'] = '3';
+    m['G'] = '4'; m['H'] = '4'; m['I'] = '4';
+    m['J'] = '5'; m['K'] = '5'; m['L'] = '5';
+    m['M'] = '6'; m['N'] = '6'; m['O'] = '6';
+    m['P'] = '7'; m['R'] = '7'; m['S'] = '7';
+    m['T'] = '8'; m['U'] = '8'; m['V'] = '8';
+    m['W'] = '9'; m['X'] = '9'; m['Y'] = '9';
+
+    // for (auto e: m) cout << e.first << ":" << e.second << "\t";
+    // cout << "\n";
+    // cout << m['W'];
+
+    int N;
+    cin >> N;
+    
+    // char key[100] = {''};
+
+    map<string, int> ans;
+
+    for (int j=0; j < N; ++j)
+    {
+        string key;        // 读入的编码后的电话号码
+        string key2;       // 翻译过后的电话号码
+        cin >> key;
+        for (int i=0; i<(int)key.size(); ++i) {
+            if (key2.size() == 3) key2.push_back('-');
+
+            if (key[i] >= 'A' && key[i] < 'Z')
+            {
+                key2.push_back(m[key[i]]);
+            } else if (key[i] >= '0' && key[i] <= '9') {
+                key2.push_back(key[i]);
+            } else { continue; }
+        }
+        /*
+        for (auto e: key2) cout << e;
+        cout << "\n";
+        */
+        // 添加统计
+        if (ans[key2]) ans[key2] += 1;
+        else ans[key2] = 1;
+    }
+
+    // 按照key的字母进行排序, map是已经按照key进行排序了
+
+    // 打印大于1的电话号码列表
+    typedef std::map<string, int>::iterator it_type;
+    for (it_type it = ans.begin(); it != ans.end(); ++it)
+    {
+        if (it->second > 1) {
+            cout << it->first << " " << it->second << "\n";
+        }
+    }
+
+    return 0;
+}
