@@ -63,6 +63,9 @@ int main()
     }
     // 按照首字母进行排序
     // qsort(ph, nph, 9, strcmp);
+    // 这个比较函数有点蛋疼。在这个quora上找到解答
+    // https://www.quora.com/How-can-I-sort-a-2D-array-of-type-char-using-the-C++-sort-or-qsort-function
+
     qsort(ph, nph, 9, (int (*)(const void *, const void *))strcmp);
 
     // 打印有出现两次以上的号码
