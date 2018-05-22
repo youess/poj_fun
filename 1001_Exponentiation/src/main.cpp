@@ -5,116 +5,190 @@
  *
  * 高精度解析:
  * https://wenku.baidu.com/view/54adf6c18bd63186bcebbc68.html
+ *
+ * 大体步骤为用数组代替单纯的double精度类型，并注意后续的打印格式
+ *
+ * 数组a和数组b分别表示两个数，数组c表示结果。
+ *
+ * 保持数组a,b逆序，容易往后相加计算。
+ *
+ * [5, 4] 和 [5, 4]
+ * eg: a[0] * b[0] = 25 = c[0]
+ * c[0] = 25 % 10, c[1] += 25 / 10;  然后继续往后的操作。
+ *
+ *
  */
 
-// #include <sstream>
+#include <cstdlib>
+#include <cstdio>
 #include <string>
-#include <iostream>
-#include <memory.h>
+#include <cstring>
+
+using namespace std;
 
 
-int main() {
+int main()
+{
 
-    // std::string s;
-    char d[5];
+    // 读入数据
+    char d[10] = {0};
     int n(0);
-    // double res(0);
-    // double tmp(0);
-    while (std::cin >> d >> n)
+
+    while (scanf("%s%d", d, &n) != EOF)
     {
-        // 测试
-        // std::cout << "输出结果: ";
-        // std::cout << s << " " << n << std::endl;
-
-        /* 无脑相乘
-        std::stringstream ss(s);
-        ss >> res;
-        std::cout << "输入double值: " << res << " 指数: " << n;
-
-        tmp = res;
-        for (int i = 1; i < n; ++i) {
-            res *= tmp;
-        }
-        std::cout << " 指数结果为:" << res << std::endl;
-        // 98.999 10
-        // 输入double值: 98.999 指数: 10 指数结果为:9.04291e+19
-        */
-
-        /* Warm up
-        for (int i = 0; i < 5; ++i) {
-            std::cout << d[i];
-        }
-        std::cout << " " << n << std::endl;
-        */
-
-        int a[150] = {0}, b[150] = {0}, c[150] = {0};
-        int lena, lenb, lenc, lend, len;
-        int i, j, k, temp, flag, digit;
-
-        // 基数的长度
-        lend = strlen(d);
-        // 小数点的位置
-        for (i=0; d[i]; ++i)
-            if (d[i] == '.') break;
-        digit = lend - i;
-        for (j=i; d[j]; ++j) d[j] = d[j+1];
-        lend -= 1;
-
-        // 逆序数字数组
-        for (i=0; i <= lend / 2; ++i)
+        if (n == 0)
         {
-            temp = d[i]; d[i] = d[lend - i];
-            d[lend - i] = temp;
-        }
-
-        // copy 数组, ascii字符0-9，码表从48位开始
-        for (i=0; d[i]; ++i) a[i] = d[i] - 48;
-        lena = lend;
-        for (i=0; i <= lena; ++i) b[i] = a[i];
-        lenb = lena;
-
-        // 计算乘法
-        for (i = 1; i <= n - 1; ++i) {
-            // 计算两个数相乘结果
-            for (j = 0; j <= lenb; ++j) {
-                for (k=0; k <= lena; ++k) {
-                    c[j + k] += a[k] * b[j];
-                    c[j + k + 1] += c[j + k] / 10;
-                    c[j + k] %= 10;
-                }
-            }
-            // 将c的值赋予b，能够让上面的循环在>2的指数下继续成立
-            k--; j--;
-            lenc = c[j + k + 1] != 0 ? j + k + 1 : j + k;
-            for (j=0; j <= lenc; ++j) b[j] = c[j];
-            lenb = lenc;
-            // 清零c，作为辅助结果。
-            memset(c, 0, sizeof(c));
-        }
-
-        // 打印结果，判断小数点前是否为0.
-        digit = n * digit; len = lenb + 1 - digit; flag = 0;
-        for (i=lenb - len; i>=0; --i) {
-            if (b[i] != 0) {flag = 1; break;}
-        }
-        if (flag == 0) {
-            for (i=lenb; i>=lenb-len+1; --i)
-                std::cout << b[i];
-            std::cout << std::endl;
+            printf("1\n");
             continue;
         }
-        if (len == 1 && b[lenb] == 0) std::cout << ".";
-        else {
-            for (i=lenb; i>=lenb-len+1;--i)
-                std::cout << b[i];
-            std::cout << ".";
-        }
-        for (i=0; i<=lenb-len;++i)
-            if (b[i] != 0) {temp =i; break; }
 
-        for (i=lenb-len; i>=temp;--i)
-            std::cout << b[i];
-        std::cout << std::endl;
+        int a[150]={0}, b[150]={0}, c[150]={0};
+        int lena, lenb, lenc, lend;
+
+        // 正确读取数字
+        // 11.345 digit=3, len=2, lena=4
+        // eg: 0000.01 1
+
+        int i, j, digit, flag(0);
+
+        // 跳过前面的0
+        for (i=0; d[i]; ++i)
+            if (d[i] != '0' || d[i+1] == '.') {flag=1; break;}
+        if (flag) for (j=0; d[j]; ++j) d[j] = d[j+i];
+
+        // 跳过小数点后面的0
+        for (i=0; d[i]; ++i)
+            if (d[i] == '.') break;
+
+        lend = (int)strlen(d) - 1;
+        if (lend < 0) {
+            printf("0\n");
+            continue;
+        }
+
+        digit = i == lend + 1 ? 0 : i;                      // . position
+        int z(0);
+        for (j=i+1; d[j]; ++j)
+        {
+            if (d[j] == '0') z += 1;
+            if (d[j] != '0') z = 0;
+        }
+
+        // printf("%d\n", z);
+        if (z > 0)
+        {
+            for (j=0; j < z; ++j) d[lend-j] = d[lend-j+1];     // 后续置空
+        }
+        lend = lend - z;
+
+        // check the normalized string
+        // for (i=0; d[i]; ++i) {printf("%c", d[i]);} printf("\n");
+
+        // 去掉"."
+        if (digit > 0) {
+            for (j=digit; d[j]; ++j) d[j] = d[j+1];
+            digit = lend - digit;    // 小数点位数
+            lend -= 1;
+        }
+        // printf("%d %d\n", lend, digit);
+        // for (i=0; d[i]; ++i) {printf("%c", d[i]);} printf("\n");
+
+        // 交换数字字符的顺序
+        char temp;
+        for (i=0; i<=lend/2; ++i)
+        {
+            temp = d[i]; d[i] = d[lend-i];
+            d[lend-i] = temp;
+        }
+        // for (i=0; d[i]; ++i) {printf("%c", d[i]);} printf("\n");
+
+        // 复制d的值到a, b数组中。
+        for (i=0; d[i]; ++i) a[i] = d[i] - 48;
+        for (i=0; d[i]; ++i) b[i] = a[i];
+        lena = lenb = lend;
+
+        // for (i=0; i <= lena; ++i) {printf("%d", a[i]);} printf("\n");
+        // printf("%d %d\n", digit, lena);
+        //for (i=0; i <= lena; ++i) printf("%d", a[i]);
+        //printf("\n");
+        // printf("%d %d %d\n", lena, lenb, lend);
+        // 进行乘法操作
+        int k;
+        for (k = 1; k <= n - 1; ++k)         // 阶乘
+        {
+            for (i=0; i <= lena; ++i)
+            {
+                for (j=0; j<=lenb; ++j)
+                {
+                    c[i+j] += a[i] * b[j];
+                    c[i+j+1] += c[i+j] / 10;
+                    c[i+j] %= 10;
+                    // printf("%d ", c[i+j]);
+                }
+            }
+            i--; j--;
+            lenc =  c[i+j+1] != 0 ? i + j + 1 : i + j;
+            // 将a复制结果c
+            for (i=0; i <= lenc; ++i) a[i] = c[i];
+            lena = lenc;
+            memset(c, 0, sizeof(c));
+        }
+        //for (i=0; i <= lena; ++i) {printf("%d", a[i]);} printf("\n");
+        // 打印结果
+        int len;
+        digit *= n;               // 小数点位数
+        len = lena + 1 - digit;   // 非小数点位数
+
+        if ( (len == 1 && a[lena] == 0 || len == 0) && digit != 0)
+        {
+            //printf("C1 %d %d %d\n", digit, len, lena);
+            printf(".");
+            for (i=lena-len; i>=0; i--)
+                printf("%d", a[i]);
+        }else if (digit == 0) {
+            //printf("C2 %d %d %d\n", digit, len, lena);
+            for (i=lena; i>=digit; i--)
+                printf("%d", a[i]);
+        } else {
+            //printf("C3 %d %d %d\n", digit, len, lena);
+            for (i=lena; i>digit-1; i--)
+                printf("%d", a[i]);
+            printf(".");
+            for (i = digit-1; i >= 0; i--)
+                printf("%d", a[i]);
+        }
+        printf("\n");
+
+
+        /*
+        flag = 0;                 // 是否全部都是0
+        printf("%d %d\n", digit, len);
+        for (i=lena-len; i>=0;--i)
+            if (a[i] != 0) {flag = 1; break;}
+
+        if (flag == 0)
+        {
+            for (i=lena; i>=lena-len+1; --i) printf("%d", a[i]);
+            // printf("0");
+            printf("\n");
+            continue;
+        }
+        // 打印整数部分
+        if (len == 1 && a[lena] == 0) printf(".");
+        else {
+            for (i=lena;i>=lena-len+1; --i) printf("%d", a[i]);
+            printf(".");
+        }
+        // 打印小数部分
+        int tmp(0);
+        for (i=0; i<=lena-len; ++i)
+        {
+            if (a[i] != 0) {tmp = i; break;}
+        }
+        for (i=lena-len; i>=tmp; --i)
+            printf("%d", a[i]);
+        printf("\n");
+        */
     }
 
     return 0;
